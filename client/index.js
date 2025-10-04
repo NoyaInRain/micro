@@ -907,7 +907,7 @@ micro.OL = class extends HTMLOListElement {
 
                 // Prevent scrolling and text selection
                 event.preventDefault();
-                this._from = this._li.nextElementSibling;
+                this._from = this._li.nextElementSibling ?? this.li;
                 this._to = null;
                 this._over = this._li;
                 this._li.classList.add("micro-ol-li-moving");
