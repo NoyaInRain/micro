@@ -10,7 +10,7 @@ services:
     - redis
 before_install:
     - nvm ls
-    - nvm use 12
+    # - nvm use 12
 install:
     - make deps
     - make deps-dev
