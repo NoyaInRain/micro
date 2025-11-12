@@ -80,7 +80,7 @@ class Object:
         return {'__type__': type(self).__name__, 'id': self.id}
 
     def __repr__(self):
-        return '<{}>'.format(self.id)
+        return f'<{self.id}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Object) and self.id == other.id

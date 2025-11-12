@@ -137,7 +137,7 @@ def look_up_files(paths: Sequence[str], *, top: Union[str, Path] = Path()) -> Li
         else:
             expanded = sorted(top.glob(pattern))
             if not expanded:
-                raise ValueError('No file matching paths entry {}'.format(pattern))
+                raise ValueError(f'No file matching paths entry {pattern}')
             for path in expanded:
                 if path.is_dir():
                     for dirpath, _, filenames in walk(str(path)):

@@ -82,9 +82,9 @@ class ServerTest(ServerTestCase):
         # API (generic)
         cat = self.app.cats.create()
         await self.request('/api/cats/move', method='POST',
-                           body='{{"item_id": "{}", "to_id": null}}'.format(cat.id))
-        await self.request('/api/cats/{}/trash'.format(cat.id), method='POST', body='')
-        await self.request('/api/cats/{}/restore'.format(cat.id), method='POST', body='')
+                           body=f'{{"item_id": "{cat.id}", "to_id": null}}')
+        await self.request(f'/api/cats/{cat.id}/trash', method='POST', body='')
+        await self.request(f'/api/cats/{cat.id}/restore', method='POST', body='')
 
         # API (as staff member)
         self.client_device = self.staff_member_device

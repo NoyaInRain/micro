@@ -102,9 +102,9 @@ class Cat(Object, Editable, Trashable, WithContent):
     @staticmethod
     def make(*, name: str = None, app: Application) -> 'Cat':
         """Create a :class:`Cat` object."""
-        id = 'Cat:{}'.format(randstr())
+        id = f'Cat:{randstr()}'
         return Cat(id=id, app=app, authors=[], trashed=False, text=None, resource=None, name=name,
-                   activity=Activity(id='{}.activity'.format(id), app=app, subscriber_ids=[]))
+                   activity=Activity(id=f'{id}.activity', app=app, subscriber_ids=[]))
 
     def __init__(
             self, *, id: str, app: Application, authors: List[str], trashed: bool,

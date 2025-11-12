@@ -489,7 +489,8 @@ def bzpoptimed(r: Redis, key: str, *,
 
     deadline = time() + timeout if timeout else float('inf')
     p = r.pubsub()
-    p.subscribe('__keyspace@{}__:{}'.format(r.connection_pool.connection_kwargs['db'], key))
+    db = r.connection_pool.connection_kwargs['db']
+    p.subscribe(f'__keyspace@{db}__:{key}')
     while True:
         result = zpoptimed(r, key)
         if isinstance(result, tuple):

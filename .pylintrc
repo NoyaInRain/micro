@@ -14,7 +14,6 @@ disable=
     # There are built-ins with common names like id
     redefined-builtin,
     # Handled by mypy
-    iterable_check,
     typecheck
 
 [reports]

@@ -50,8 +50,8 @@ class Hello(Application):
                 raise error.ValueError('No text and resource')
 
             greeting = Greeting(
-                id='Greeting:{}'.format(randstr()), app=self.app, authors=[user.id],
-                text=attrs['text'], resource=attrs['resource'])
+                id=f'Greeting:{randstr()}', app=self.app, authors=[user.id], text=attrs['text'],
+                resource=attrs['resource'])
             self.app.r.oset(greeting.id, greeting)
             self.app.r.lpush(self.ids.key, greeting.id)
             self.app.activity.publish(

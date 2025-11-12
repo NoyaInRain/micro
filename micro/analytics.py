@@ -122,7 +122,7 @@ class Statistic:
     def __init__(self, topic: str, *, app: 'Application') -> None:
         self.topic = topic
         self.app = app
-        self._key = 'analytics.statistics.{}'.format(self.topic)
+        self._key = f'analytics.statistics.{self.topic}'
 
     def get(self, *, user: Optional[User]) -> List['Point']:
         """See :http:get:`/api/analytics/statistics/(topic)`."""
@@ -187,7 +187,7 @@ class Referrals(Collection[Referral]):
         """See :http:post:`/api/analytics/referrals`."""
         # pylint: disable=unused-argument; part of API
         if not urlsplit(url).scheme:
-            raise error.ValueError('Relative url {}'.format(url))
+            raise error.ValueError(f'Relative url {url}')
         referral = Referral(id=randstr(), app=self.app, url=url, time=self.app.now().isoformat())
         self.app.r.oset(referral.id, referral)
         self.app.r.r.zadd(self.ids.key, {referral.id.encode(): -referral.time.timestamp()})

@@ -157,7 +157,7 @@ class Server:
     def __init__(
             self, app: micro.Application, handlers: Sequence[Handler], *, port: int = 8080,
             url: str = None, debug: bool = False, client_config: ClientConfigArg = {}) -> None:
-        url = url or 'http://localhost:{}'.format(port)
+        url = url or f'http://localhost:{port}'
         try:
             urlparts = urlparse(url)
         except ValueError as e:
@@ -338,7 +338,8 @@ class Endpoint(RequestHandler):
 
     def patch(self, *args, **kwargs):
         try:
-            op = getattr(self, 'patch_{}'.format(self.args.pop('op')))
+            name = self.args.pop('op')
+            op = getattr(self, f'patch_{name}')
         except KeyError as e:
             raise HTTPError(http.client.BAD_REQUEST) from e
         except AttributeError as e:
@@ -393,11 +394,11 @@ class Endpoint(RequestHandler):
         """
         arg = self.args.get(name, default)
         if arg is _UNDEFINED:
-            raise error.ValueError('Missing {}'.format(name))
+            raise error.ValueError(f'Missing {name}')
         try:
             return expect(arg)
         except TypeError as e:
-            raise error.ValueError('Bad {} type'.format(name)) from e
+            raise error.ValueError(f'Bad {name} type') from e
 
     def check_args(self, type_info):
         """Check *args* for their expected type.
@@ -488,7 +489,7 @@ class ActivityStreamEndpoint(Endpoint):
             self.app.user = self.current_user
             data = json.dumps(
                 event.json(restricted=True, include=True, rewrite=self.server.rewrite))
-            self.write('data: {}\n\n'.format(data))
+            self.write(f'data: {data}\n\n')
             self.flush()
 
     def on_connection_close(self) -> None:
@@ -600,7 +601,7 @@ class UI(RequestHandler):
             'og:title': settings.title,
             'og:description': self.server.client_config['description'],
             'og:image': urljoin(self.server.url, settings.icon_large),
-            'og:image:alt': '{} logo'.format(settings.title),
+            'og:image:alt': f'{settings.title} logo',
             'og:site_name': settings.title
         }
 
@@ -733,15 +734,15 @@ class _BuildManifest(RequestHandler):
             # rendered templates). Tornado does not provide an API to request a response, so fall
             # back to HTTP.
             client = AsyncHTTPClient()
-            requests = (client.fetch('http://localhost:{}/{}'.format(self._server.port, path))
+            requests = (client.fetch(f'http://localhost:{self._server.port}/{path}')
                         for path in shell)
             responses = await cast('Future[Tuple[HTTPResponse]]', gather(*requests))
-            shell = ['/{}?v={}'.format(path, response.headers['Etag'].strip('"'))
-                     for path, response in zip(shell, responses)]
+            etags = [response.headers['Etag'].strip('"') for response in responses]
+            shell = [f'/{path}?v={etag}'.format(path, etags) for path, etag in zip(shell, etags)]
             _BuildManifest._manifest = {'shell': shell, 'debug': self._server.debug} # type: ignore
 
         self.set_header('Content-Type', 'text/javascript')
-        self.write('micro.service.MANIFEST = {};\n'.format(json.dumps(self._manifest)))
+        self.write(f'micro.service.MANIFEST = {json.dumps(self._manifest)};\n')
 
 class _Service(RequestHandler):
     _version = None # type: ClassVar[str]
@@ -752,7 +753,7 @@ class _Service(RequestHandler):
     async def get(self) -> None:
         if not self._version:
             response = await AsyncHTTPClient().fetch(
-                'http://localhost:{}/manifest.js'.format(self._server.port))
+                f'http://localhost:{self._server.port}/manifest.js')
             _Service._version = response.headers['Etag'].strip('"') # type: ignore
 
         self.set_header('Content-Type', 'text/javascript')
@@ -779,7 +780,7 @@ class _LogClientErrorEndpoint(Endpoint):
 
         message = str_or_none(args.get('message'))
         message_part = ': ' + message if message else ''
-        user = '{} ({})'.format(self.app.user.name, self.app.user.id) if self.app.user else '-'
+        user = f'{self.app.user.name} ({self.app.user.id})' if self.app.user else '-'
         _LOGGER.error(
             _CLIENT_ERROR_LOG_TEMPLATE, args['type'], message_part, args['stack'].strip(),
             args['url'], user, self.request.headers.get('user-agent', '-'))

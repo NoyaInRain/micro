@@ -7,3 +7,7 @@ pywebpush ~= 1.4
 py-vapid ~= 1.3
 # Work around missing pywebpush dependency (see https://github.com/web-push-libs/pywebpush/pull/132)
 six ~= 1.15
+# XXX
+# https://github.com/web-push-libs/vapid/issues/105
+# cryptography ~= 45.0
+cryptography ~= 38.0 # <- tmp: last version with encode_point

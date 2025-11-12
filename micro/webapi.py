@@ -58,7 +58,7 @@ async def fetch(request: Union[HTTPRequest, str], raise_error: bool = True,
     except HTTPTimeoutError as e:
         raise CommunicationError(f'{strerror(errno.ETIMEDOUT)} for {method} {url}') from e
     except OSError as e:
-        raise CommunicationError('{} for {} {}'.format(e, method, url)) from e
+        raise CommunicationError(f'{e} for {method} {url}') from e
 
 class WebAPI:
     """Simple JSON REST API client.
@@ -81,7 +81,7 @@ class WebAPI:
         urlparts = urlsplit(url)
         if not (urlparts.scheme in {'http', 'https'} and urlparts.netloc and
                 not any([urlparts.query, urlparts.fragment])):
-            raise ValueError('Bad url {!r}'.format(url))
+            raise ValueError(f'Bad url {url!r}')
         self.url = url
         self.query = query
         self.headers = headers
@@ -102,7 +102,7 @@ class WebAPI:
             raise ValueError('Blank method')
         urlparts = urlsplit(url)
         if any([urlparts.scheme, urlparts.netloc, urlparts.query, urlparts.fragment]):
-            raise ValueError('Bad url {!r}'.format(url))
+            raise ValueError(f'Bad url {url!r}')
 
         query = dict(list(self.query.items()) + list(query.items()))
         url = SplitResult(
@@ -118,9 +118,8 @@ class WebAPI:
             if not isinstance(result, dict):
                 raise TypeError()
         except (UnicodeDecodeError, JSONDecodeError, TypeError) as e:
-            raise CommunicationError('Bad response format for {} {}'.format(method, url)) from e
+            raise CommunicationError(f'Bad response format for {method} {url}') from e
 
         if not 200 <= response.code < 300:
-            raise WebAPIError('Error {} for {} {}'.format(response.code, method, url), result,
-                              response.code)
+            raise WebAPIError(f'Error {response.code} for {method} {url}', result, response.code)
         return result

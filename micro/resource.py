@@ -381,7 +381,7 @@ async def handle_webpage(url: str, content_type: str, data: bytes,
     try:
         html = data.decode()
     except UnicodeDecodeError as e:
-        raise BrokenResourceError('Bad data encoding analyzing {}'.format(url)) from e
+        raise BrokenResourceError(f'Bad data encoding analyzing {url}') from e
     parser = _MetaParser()
     parser.feed(html)
     parser.close()

@@ -306,7 +306,6 @@ class Application:
         May be overridden by subclass. Called by :meth:`update`, which takes care of updating (or
         initializing) micro specific data. The default implementation does nothing.
         """
-        # pylint: disable=no-self-use; part of subclass API
         return {}
 
     def create_user(self, data: Dict[str, object]) -> 'User':
@@ -317,7 +316,6 @@ class Application:
         May be overridden by subclass. Called by :meth:`login` for new users, which takes care of
         storing the object. By default, a standard :class:`User` is returned.
         """
-        # pylint: disable=no-self-use; part of subclass API
         return User(**data) # type: ignore
 
     def create_settings(self) -> 'Settings':
@@ -398,7 +396,6 @@ class Application:
         Called by the :attr:`files` garbage collect job. The default implementation returns an empty
         iterator.
         """
-        # pylint: disable=no-self-use; part of API
         return iter(())
 
     async def send_device_notification(self, push_subscription: str, event: Event) -> None:
@@ -418,8 +415,8 @@ class Application:
         # Unfortunately sign() tries to validate the email address
         email = 'bot@email.localhost' if self.email == 'bot@localhost' else self.email
         headers = Vapid.from_raw(self.settings.push_vapid_private_key.encode()).sign({
-            'aud': '{}://{}'.format(urlparts.scheme, urlparts.netloc),
-            'sub': 'mailto:{}'.format(email)
+            'aud': f'{urlparts.scheme}://{urlparts.netloc}',
+            'sub': f'mailto:{email}'
         })
 
         try:
@@ -433,9 +430,9 @@ class Application:
         if response.status_code in (404, 410):
             raise ValueError('push_subscription_invalid')
         if response.status_code != 201:
+            endpoint = push_subscription['endpoint']
             raise CommunicationError(
-                'Unexpected response status {} for POST {}'.format(response.status_code,
-                                                                   push_subscription['endpoint']))
+                f'Unexpected response status {response.status_code} for POST {endpoint}')
 
     @staticmethod
     def _encode(object: JSONifiable) -> Dict[str, object]:
@@ -468,8 +465,13 @@ class Application:
     def _generate_push_vapid_keys():
         vapid = Vapid()
         vapid.generate_keys()
-        return (b64urlencode(vapid.private_key.private_numbers().private_value.to_bytes(32, 'big')),
-                b64urlencode(vapid.public_key.public_numbers().encode_point()))
+        # fixed like in https://github.com/web-push-libs/vapid/pull/69
+        # from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+        return (
+            b64urlencode(vapid.private_key.private_numbers().private_value.to_bytes(32, 'big')),
+            b64urlencode(vapid.public_key.public_numbers().encode_point()))
+            #b64urlencode(
+            #    vapid.public_key.public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)))
 
 class Gone:
     """See :ref:`Gone`."""
@@ -1072,7 +1074,7 @@ class Activity(Object, JSONRedisSequence[JSONifiable]):
     def __init__(self, *, app: Application, pre: Callable[[], None] = None, **data: object) -> None:
         id = cast(str, data['id'])
         super().__init__(id=id, app=app)
-        JSONRedisSequence.__init__(self, app.r, '{}.items'.format(id), pre)
+        JSONRedisSequence.__init__(self, app.r, f'{id}.items', pre)
         self.post = None # type: Optional[Callable[[Event], None]]
         self.host = None # type: Optional[object]
         self._subscriber_ids = cast('list[str]', data['subscriber_ids'])
@@ -1218,8 +1220,7 @@ class Event(Object):
         }
 
     def __str__(self) -> str:
-        return '<{} {} on {} by {}>'.format(type(self).__name__, self.type, self._object_id,
-                                            self._user_id)
+        return f'<{type(self).__name__} {self.type} on {self._object_id} by {self._user_id}>'
     __repr__ = __str__
 
 class AuthRequest(Object):
