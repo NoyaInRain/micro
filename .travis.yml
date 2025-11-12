@@ -9,7 +9,7 @@ git:
 services:
     - redis
 before_install:
-    - nvm use v12.7.0
+    - nvm use v12.22.12
 install:
     - make deps
     - make deps-dev
